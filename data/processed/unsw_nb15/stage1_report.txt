@@ -1,0 +1,77 @@
+======================================================================
+STAGE 1 PIPELINE — dataset: unsw_nb15
+======================================================================
+
+>>> Step 1: Loading raw data
+Loaded 5000 rows, 19 columns
+Attack-type distribution:
+attack_type
+Normal            4194
+Exploits           174
+Reconnaissance     159
+Fuzzers            159
+Generic            159
+DoS                155
+
+>>> Step 2: Cleaning, encoding, splitting
+  [1/7] Dropped identifier/leaky columns: ['source_dataset']
+  [2/7] Dropped 0 duplicate rows (5000 -> 5000 rows)
+  [3/7] Replaced 0 inf values and imputed 0 missing numeric values with column medians
+  [5/7] Encoded categoricals -> one-hot: ['proto', 'service', 'state', 'attack_cat'], label-encoded (high cardinality): none
+  [6/7] Final feature matrix shape: (5000, 12)
+  [7/7] Three-way split -> train: (3250, 12) (real distribution, SMOTE applied downstream), val: (750, 12) (REAL distribution, untouched — use for threshold tuning), test: (1000, 12) (REAL distribution, untouched — final evaluation only). Scaler fit on train only.
+    Class balance — train: {0: 2726, 1: 524}, val: {0: 629, 1: 121}, test: {0: 839, 1: 161}
+
+Binary class distribution (train):
+       count    pct
+label              
+0       2726  83.88
+1        524  16.12
+
+>>> Step 3: Feature selection (top 10)
+Top 10 features by Information Gain:
+feature  ig_score
+  sload  0.015689
+   sttl  0.009057
+ sbytes  0.005321
+ dinpkt  0.000592
+  spkts  0.000093
+    dur  0.000000
+  dpkts  0.000000
+ dbytes  0.000000
+   dttl  0.000000
+   rate  0.000000
+
+Top 10 features by RFE:
+feature  rfe_rank
+    dur         1
+  spkts         1
+  dpkts         1
+ sbytes         1
+ dbytes         1
+   rate         1
+  dload         1
+  sload         1
+ sinpkt         1
+ dinpkt         1
+
+Features BOTH methods agree on (10): ['dbytes', 'dinpkt', 'dpkts', 'dttl', 'dur', 'rate', 'sbytes', 'sload', 'spkts', 'sttl']
+
+Final selected feature set (10 features): ['dbytes', 'dinpkt', 'dpkts', 'dttl', 'dur', 'rate', 'sbytes', 'sload', 'spkts', 'sttl']
+
+>>> Step 4: Class imbalance handling (SMOTE on TRAINING SET ONLY — val/test untouched)
+       count   pct
+label             
+0       2726  50.0
+1       2726  50.0
+       count    pct
+label              
+0        629  83.87
+1        121  16.13
+       count   pct
+label             
+0        839  83.9
+1        161  16.1
+
+Alternative — computed class weights (for weighted-loss training instead of SMOTE): {np.int64(0): np.float64(0.5961115187087307), np.int64(1): np.float64(3.101145038167939)}
+Saved fitted StandardScaler to ../data/processed/unsw_nb15/scaler.pkl (required by Stage 6 for live inference)

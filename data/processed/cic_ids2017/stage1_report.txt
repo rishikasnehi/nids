@@ -1,0 +1,77 @@
+======================================================================
+STAGE 1 PIPELINE — dataset: cic_ids2017
+======================================================================
+
+>>> Step 1: Loading raw data
+Loaded 5000 rows, 21 columns
+Attack-type distribution:
+attack_type
+BENIGN          3995
+DDoS             396
+PortScan         307
+Bot              191
+Infiltration     111
+
+>>> Step 2: Cleaning, encoding, splitting
+  [1/7] Dropped identifier/leaky columns: ['source_dataset']
+  [2/7] Dropped 0 duplicate rows (5000 -> 5000 rows)
+  [3/7] Replaced 50 inf values and imputed 75 missing numeric values with column medians
+  [4/7] Dropped 1 zero-variance columns: ['fwd_psh_flags']
+  [5/7] Encoded categoricals -> one-hot: none, label-encoded (high cardinality): none
+  [6/7] Final feature matrix shape: (5000, 17)
+  [7/7] Three-way split -> train: (3250, 17) (real distribution, SMOTE applied downstream), val: (750, 17) (REAL distribution, untouched — use for threshold tuning), test: (1000, 17) (REAL distribution, untouched — final evaluation only). Scaler fit on train only.
+    Class balance — train: {0: 2597, 1: 653}, val: {0: 599, 1: 151}, test: {0: 799, 1: 201}
+
+Binary class distribution (train):
+       count    pct
+label              
+0       2597  79.91
+1        653  20.09
+
+>>> Step 3: Feature selection (top 10)
+Top 10 features by Information Gain:
+                    feature  ig_score
+     fwd_packet_length_mean  0.011280
+     total_backward_packets  0.007060
+      fwd_packet_length_max  0.006655
+      fwd_packet_length_min  0.005174
+               flow_iat_std  0.005162
+              flow_duration  0.004796
+                   protocol  0.004648
+          total_fwd_packets  0.004090
+      fwd_packet_length_std  0.003111
+total_length_of_fwd_packets  0.000000
+
+Top 10 features by RFE:
+                    feature  rfe_rank
+              flow_duration         1
+total_length_of_fwd_packets         1
+      fwd_packet_length_min         1
+total_length_of_bwd_packets         1
+     fwd_packet_length_mean         1
+              flow_iat_mean         1
+             flow_packets_s         1
+               flow_bytes_s         1
+              bwd_iat_total         1
+               flow_iat_std         1
+
+Features BOTH methods agree on (10): ['flow_duration', 'flow_iat_std', 'fwd_packet_length_max', 'fwd_packet_length_mean', 'fwd_packet_length_min', 'fwd_packet_length_std', 'protocol', 'total_backward_packets', 'total_fwd_packets', 'total_length_of_fwd_packets']
+
+Final selected feature set (10 features): ['flow_duration', 'flow_iat_std', 'fwd_packet_length_max', 'fwd_packet_length_mean', 'fwd_packet_length_min', 'fwd_packet_length_std', 'protocol', 'total_backward_packets', 'total_fwd_packets', 'total_length_of_fwd_packets']
+
+>>> Step 4: Class imbalance handling (SMOTE on TRAINING SET ONLY — val/test untouched)
+       count   pct
+label             
+0       2597  50.0
+1       2597  50.0
+       count    pct
+label              
+0        599  79.87
+1        151  20.13
+       count   pct
+label             
+0        799  79.9
+1        201  20.1
+
+Alternative — computed class weights (for weighted-loss training instead of SMOTE): {np.int64(0): np.float64(0.6257219869079708), np.int64(1): np.float64(2.4885145482388973)}
+Saved fitted StandardScaler to ../data/processed/cic_ids2017/scaler.pkl (required by Stage 6 for live inference)

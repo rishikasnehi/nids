@@ -1,0 +1,22 @@
+[
+  "ackdat",
+  "ct_state_ttl",
+  "dbytes",
+  "dinpkt",
+  "djit",
+  "dload",
+  "dmean",
+  "dpkts",
+  "dttl",
+  "dur",
+  "rate",
+  "sbytes",
+  "sinpkt",
+  "sjit",
+  "sload",
+  "smean",
+  "spkts",
+  "sttl",
+  "synack",
+  "tcprtt"
+]

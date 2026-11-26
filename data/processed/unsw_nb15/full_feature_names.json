@@ -1,0 +1,14 @@
+[
+  "dur",
+  "spkts",
+  "dpkts",
+  "sbytes",
+  "dbytes",
+  "rate",
+  "sttl",
+  "dttl",
+  "sload",
+  "dload",
+  "sinpkt",
+  "dinpkt"
+]

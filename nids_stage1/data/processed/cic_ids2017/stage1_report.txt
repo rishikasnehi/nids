@@ -1,0 +1,114 @@
+======================================================================
+STAGE 1 PIPELINE — dataset: cic_ids2017      
+======================================================================
+
+>>> Step 1: Loading raw data
+Loaded 2830743 rows, 81 columns
+Attack-type distribution:
+attack_type
+BENIGN                        2273097        
+DoS Hulk                       231073        
+PortScan                       158930        
+DDoS                           128027        
+DoS GoldenEye                   10293        
+FTP-Patator                      7938        
+SSH-Patator                      5897        
+DoS slowloris                    5796        
+DoS Slowhttptest                 5499        
+Bot                              1966        
+Web Attack - Brute Force         1507        
+Web Attack - XSS                  652        
+Infiltration                       36        
+Web Attack - Sql Injection         21        
+Heartbleed                         11        
+
+>>> Step 2: Cleaning, encoding, splitting    
+[1/7] Dropped identifier/leaky columns: ['source_dataset']
+[2/7] Dropped 330995 duplicate rows (2830743 -> 2499748 rows)
+[3/7] Replaced 2773 inf values and imputed 3126 missing numeric values with column medians
+[4/7] Dropped 8 zero-variance columns: ['bwd_psh_flags', 'bwd_urg_flags', 'fwd_avg_bytes_bulk', 'fwd_avg_packets_bulk', 'fwd_avg_bulk_rate', 'bwd_avg_bytes_bulk', 'bwd_avg_packets_bulk', 'bwd_avg_bulk_rate']
+[5/7] Encoded categoricals -> one-hot: none, label-encoded (high cardinality): none       
+[6/7] Final feature matrix shape: (2499748, 70)
+[7/7] Three-way split -> train: (1624835, 70) (real distribution, SMOTE applied downstream), val: (374963, 70) (REAL distribution, untouched — use for threshold tuning), test: (499950, 70) (REAL distribution, untouched — final evaluation only). Scaler fit on train only.
+  Class balance — train: {0: 1348015, 1: 276820}, val: {0: 311081, 1: 63882}, test: {0: 414774, 1: 85176}
+
+Binary class distribution (train):
+--- Class distribution: train (before resampling) ---
+         count    pct
+label
+0      1348015  82.96
+1       276820  17.04
+
+>>> Step 3: Feature selection (top 20)       
+Top 20 features by Information Gain:
+                    feature  ig_score        
+        average_packet_size  0.337647        
+     packet_length_variance  0.329512        
+          packet_length_std  0.329164        
+         packet_length_mean  0.311832        
+total_length_of_bwd_packets  0.299972        
+          subflow_bwd_bytes  0.299026        
+     bwd_packet_length_mean  0.292285        
+       avg_bwd_segment_size  0.291767        
+          max_packet_length  0.273810        
+total_length_of_fwd_packets  0.266336        
+      bwd_packet_length_max  0.265793        
+          subflow_fwd_bytes  0.265465        
+    init_win_bytes_backward  0.265048        
+           destination_port  0.263767        
+     init_win_bytes_forward  0.252934        
+      fwd_packet_length_max  0.243866        
+      bwd_packet_length_std  0.232993        
+                fwd_iat_max  0.226645        
+              fwd_iat_total  0.210346        
+               flow_iat_max  0.207765        
+
+Top 20 features by RFE:
+                    feature  rfe_rank        
+           destination_port         1        
+     packet_length_variance         1        
+       avg_bwd_segment_size         1        
+        average_packet_size         1        
+              flow_iat_mean         1        
+          subflow_fwd_bytes         1        
+        subflow_fwd_packets         1        
+      bwd_packet_length_std         1        
+     bwd_packet_length_mean         1        
+      bwd_packet_length_max         1        
+          max_packet_length         1        
+     fwd_packet_length_mean         1        
+       min_seg_size_forward         1        
+      fwd_packet_length_max         1        
+total_length_of_bwd_packets         1        
+total_length_of_fwd_packets         1        
+         packet_length_mean         1        
+          total_fwd_packets         1        
+          packet_length_std         1        
+           act_data_pkt_fwd         1        
+
+Features BOTH methods agree on (20): ['average_packet_size', 'avg_bwd_segment_size', 'bwd_packet_length_max', 'bwd_packet_length_mean', 'bwd_packet_length_std', 'destination_port', 'flow_iat_max', 'fwd_iat_max', 'fwd_iat_total', 'fwd_packet_length_max', 'init_win_bytes_backward', 'init_win_bytes_forward', 'max_packet_length', 'packet_length_mean', 'packet_length_std', 'packet_length_variance', 'subflow_bwd_bytes', 'subflow_fwd_bytes', 'total_length_of_bwd_packets', 'total_length_of_fwd_packets']
+
+Final selected feature set (20 features): ['average_packet_size', 'avg_bwd_segment_size', 'bwd_packet_length_max', 'bwd_packet_length_mean', 'bwd_packet_length_std', 'destination_port', 'flow_iat_max', 'fwd_iat_max', 'fwd_iat_total', 'fwd_packet_length_max', 'init_win_bytes_backward', 'init_win_bytes_forward', 'max_packet_length', 'packet_length_mean', 'packet_length_std', 'packet_length_variance', 'subflow_bwd_bytes', 'subflow_fwd_bytes', 'total_length_of_bwd_packets', 'total_length_of_fwd_packets']
+
+>>> Step 4: Class imbalance handling (SMOTE on TRAINING SET ONLY — val/test untouched)    
+--- Class distribution: train (after SMOTE) ---
+         count   pct
+label
+0      1348015  50.0
+1      1348015  50.0
+
+--- Class distribution: validation (REAL distribution, untouched) ---
+        count    pct
+label
+0      311081  82.96
+1       63882  17.04
+
+--- Class distribution: test (REAL distribution, untouched) ---
+        count    pct
+label
+0      414774  82.96
+1       85176  17.04
+
+Alternative — computed class weights (for weighted-loss training instead of SMOTE): {0: 0.602676898995931, 1: 2.934822267177227}       
+Saved fitted StandardScaler to ../data/processed/cic_ids2017/scaler.pkl (required by Stage 6 for live inference)
+>>> Stage 1 complete. All artifacts written to: ../data/processed/cic_ids2017

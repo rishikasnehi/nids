@@ -1,0 +1,12 @@
+[
+  "flow_duration",
+  "flow_iat_std",
+  "fwd_packet_length_max",
+  "fwd_packet_length_mean",
+  "fwd_packet_length_min",
+  "fwd_packet_length_std",
+  "protocol",
+  "total_backward_packets",
+  "total_fwd_packets",
+  "total_length_of_fwd_packets"
+]

@@ -1,0 +1,101 @@
+======================================================================
+STAGE 1 PIPELINE — dataset: unsw_nb15
+======================================================================
+
+>>> Step 1: Loading raw data
+Loaded 257673 rows, 46 columns
+Attack-type distribution:
+attack_type
+Normal            93000
+Generic           58871
+Exploits          44525
+Fuzzers           24246
+DoS               16353
+Reconnaissance    13987
+Analysis           2677
+Backdoor           2329
+Shellcode          1511
+Worms               174
+
+>>> Step 2: Cleaning, encoding, splitting
+  [1/7] Dropped identifier/leaky columns: ['source_dataset']
+  [2/7] Dropped 94928 duplicate rows (257673 -> 162745 rows)
+  [3/7] Replaced 0 inf values and imputed 0 missing numeric values with column medians
+  [5/7] Encoded categoricals -> one-hot: ['service', 'state', 'attack_cat'], label-encoded (high cardinality): ['proto']
+  [6/7] Final feature matrix shape: (162745, 40)
+  [7/7] Three-way split -> train: (105784, 40) (real distribution, SMOTE applied downstream), val: (24412, 40) (REAL distribution, untouched — use for threshold tuning), test: (32549, 40) (REAL distribution, untouched — final evaluation only). Scaler fit on train only.
+    Class balance — train: {0: 55719, 1: 50065}, val: {0: 12859, 1: 11553}, test: {0: 17144, 1: 15405}
+
+Binary class distribution (train):
+       count    pct
+label              
+0      55719  52.67
+1      50065  47.33
+
+>>> Step 3: Feature selection (top 20)
+Top 20 features by Information Gain:
+     feature  ig_score
+      sbytes  0.408898
+      dbytes  0.349213
+ct_state_ttl  0.319892
+        sttl  0.315667
+        dttl  0.310977
+       smean  0.271729
+       dmean  0.270089
+        rate  0.249910
+      dinpkt  0.246033
+      tcprtt  0.236129
+      synack  0.235951
+         dur  0.230464
+       sload  0.226547
+      ackdat  0.224291
+       dpkts  0.213303
+       dload  0.209935
+      sinpkt  0.174604
+        sjit  0.156323
+        djit  0.140639
+       spkts  0.118455
+
+Top 20 features by RFE:
+       feature  rfe_rank
+           dur         1
+        synack         1
+          djit         1
+        ackdat         1
+        dinpkt         1
+        sinpkt         1
+         smean         1
+         dmean         1
+         dload         1
+         sload         1
+          dttl         1
+          sttl         1
+          rate         1
+        dbytes         1
+        sbytes         1
+    ct_srv_src         1
+  ct_state_ttl         1
+ct_dst_src_ltm         1
+        tcprtt         1
+    ct_srv_dst         1
+
+Features BOTH methods agree on (20): ['ackdat', 'ct_state_ttl', 'dbytes', 'dinpkt', 'djit', 'dload', 'dmean', 'dpkts', 'dttl', 'dur', 'rate', 'sbytes', 'sinpkt', 'sjit', 'sload', 'smean', 'spkts', 'sttl', 'synack', 'tcprtt']
+
+Final selected feature set (20 features): ['ackdat', 'ct_state_ttl', 'dbytes', 'dinpkt', 'djit', 'dload', 'dmean', 'dpkts', 'dttl', 'dur', 'rate', 'sbytes', 'sinpkt', 'sjit', 'sload', 'smean', 'spkts', 'sttl', 'synack', 'tcprtt']
+
+>>> Step 4: Class imbalance handling (SMOTE on TRAINING SET ONLY — val/test untouched)
+       count   pct
+label             
+0      55719  50.0
+1      55719  50.0
+       count    pct
+label              
+0      12859  52.67
+1      11553  47.33
+       count    pct
+label              
+0      17144  52.67
+1      15405  47.33
+
+Alternative — computed class weights (for weighted-loss training instead of SMOTE): {0: 0.9492632674671118, 1: 1.0564665934285429}
+Saved fitted StandardScaler to ../data/processed/unsw_nb15/scaler.pkl (required by Stage 6 for live inference)
